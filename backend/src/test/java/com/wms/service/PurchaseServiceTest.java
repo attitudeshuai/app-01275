@@ -196,4 +196,129 @@ class PurchaseServiceTest {
 
         assertThrows(BusinessException.class, () -> purchaseService.delete(1L));
     }
+
+    @Test
+    void statusFlow_PendingToApproved_ShouldSetStatusTo1() {
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            mockedUserContext.when(UserContext::getUserId).thenReturn(1L);
+
+            BizPurchaseOrder order = new BizPurchaseOrder();
+            order.setId(1L);
+            order.setStatus(0);
+
+            when(orderMapper.selectById(1L)).thenReturn(order);
+            when(orderMapper.updateById(any(BizPurchaseOrder.class))).thenReturn(1);
+
+            purchaseService.approve(1L, true, "审批通过");
+
+            verify(orderMapper).updateById(argThat(o -> o.getStatus() == 1 && o.getApproverId() == 1L));
+        }
+    }
+
+    @Test
+    void statusFlow_PendingToRejected_ShouldSetStatusTo2() {
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            mockedUserContext.when(UserContext::getUserId).thenReturn(1L);
+
+            BizPurchaseOrder order = new BizPurchaseOrder();
+            order.setId(1L);
+            order.setStatus(0);
+
+            when(orderMapper.selectById(1L)).thenReturn(order);
+            when(orderMapper.updateById(any(BizPurchaseOrder.class))).thenReturn(1);
+
+            purchaseService.approve(1L, false, "审批拒绝");
+
+            verify(orderMapper).updateById(argThat(o -> o.getStatus() == 2 && "审批拒绝".equals(o.getApproveRemark())));
+        }
+    }
+
+    @Test
+    void statusFlow_ApprovedToInbound_ShouldSetStatusTo3() {
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            mockedUserContext.when(UserContext::getUserId).thenReturn(1L);
+
+            BizPurchaseOrder order = new BizPurchaseOrder();
+            order.setId(1L);
+            order.setOrderNo("CG001");
+            order.setStatus(1);
+            order.setWarehouseId(1L);
+
+            BizPurchaseItem item = new BizPurchaseItem();
+            item.setGoodsId(1L);
+            item.setQuantity(10);
+
+            when(orderMapper.selectById(1L)).thenReturn(order);
+            when(itemMapper.selectByOrderId(1L)).thenReturn(Arrays.asList(item));
+            when(orderMapper.updateById(any(BizPurchaseOrder.class))).thenReturn(1);
+
+            purchaseService.inbound(1L);
+
+            verify(orderMapper).updateById(argThat(o -> o.getStatus() == 3 && o.getInboundTime() != null));
+        }
+    }
+
+    @Test
+    void statusFlow_RejectedOrderCannotInbound_ShouldThrowException() {
+        BizPurchaseOrder order = new BizPurchaseOrder();
+        order.setId(1L);
+        order.setStatus(2);
+
+        when(orderMapper.selectById(1L)).thenReturn(order);
+
+        assertThrows(BusinessException.class, () -> purchaseService.inbound(1L));
+    }
+
+    @Test
+    void statusFlow_InboundOrderCannotApprove_ShouldThrowException() {
+        BizPurchaseOrder order = new BizPurchaseOrder();
+        order.setId(1L);
+        order.setStatus(3);
+
+        when(orderMapper.selectById(1L)).thenReturn(order);
+
+        assertThrows(BusinessException.class, () -> purchaseService.approve(1L, true, "重新审批"));
+    }
+
+    @Test
+    void statusFlow_RejectedOrderCannotApproveAgain_ShouldThrowException() {
+        BizPurchaseOrder order = new BizPurchaseOrder();
+        order.setId(1L);
+        order.setStatus(2);
+
+        when(orderMapper.selectById(1L)).thenReturn(order);
+
+        assertThrows(BusinessException.class, () -> purchaseService.approve(1L, true, "再次审批"));
+    }
+
+    @Test
+    void inbound_ShouldIncreaseStockQuantity() {
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            mockedUserContext.when(UserContext::getUserId).thenReturn(1L);
+
+            BizPurchaseOrder order = new BizPurchaseOrder();
+            order.setId(1L);
+            order.setOrderNo("CG001");
+            order.setStatus(1);
+            order.setWarehouseId(1L);
+
+            BizPurchaseItem item1 = new BizPurchaseItem();
+            item1.setGoodsId(1L);
+            item1.setQuantity(5);
+
+            BizPurchaseItem item2 = new BizPurchaseItem();
+            item2.setGoodsId(2L);
+            item2.setQuantity(10);
+
+            when(orderMapper.selectById(1L)).thenReturn(order);
+            when(itemMapper.selectByOrderId(1L)).thenReturn(Arrays.asList(item1, item2));
+            when(orderMapper.updateById(any(BizPurchaseOrder.class))).thenReturn(1);
+
+            purchaseService.inbound(1L);
+
+            verify(stockService, times(2)).updateStock(anyLong(), eq(1L), anyInt(), eq("IN"), eq("PURCHASE"), anyLong(), eq("CG001"), anyString());
+            verify(stockService).updateStock(eq(1L), eq(1L), eq(5), eq("IN"), eq("PURCHASE"), eq(1L), eq("CG001"), anyString());
+            verify(stockService).updateStock(eq(2L), eq(1L), eq(10), eq("IN"), eq("PURCHASE"), eq(1L), eq("CG001"), anyString());
+        }
+    }
 }
