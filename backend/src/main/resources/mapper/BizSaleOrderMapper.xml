@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wms.mapper.BizSaleOrderMapper">
+    
+    <select id="selectOrderPage" resultType="com.wms.entity.BizSaleOrder">
+        SELECT o.*, c.customer_name, w.warehouse_name,
+               u1.real_name as salesman_name, u2.real_name as approver_name,
+               d.dept_name
+        FROM biz_sale_order o
+        LEFT JOIN biz_customer c ON o.customer_id = c.id
+        LEFT JOIN biz_warehouse w ON o.warehouse_id = w.id
+        LEFT JOIN sys_user u1 ON o.salesman_id = u1.id
+        LEFT JOIN sys_user u2 ON o.approver_id = u2.id
+        LEFT JOIN sys_dept d ON o.dept_id = d.id
+        WHERE o.deleted = 0
+        <if test="orderNo != null and orderNo != ''">
+            AND o.order_no LIKE CONCAT('%', #{orderNo}, '%')
+        </if>
+        <if test="customerId != null">
+            AND o.customer_id = #{customerId}
+        </if>
+        <if test="status != null">
+            AND o.status = #{status}
+        </if>
+        <if test="deptId != null">
+            AND o.dept_id = #{deptId}
+        </if>
+        ORDER BY o.create_time DESC
+    </select>
+    
+    <select id="selectOrderById" resultType="com.wms.entity.BizSaleOrder">
+        SELECT o.*, c.customer_name, w.warehouse_name,
+               u1.real_name as salesman_name, u2.real_name as approver_name,
+               d.dept_name
+        FROM biz_sale_order o
+        LEFT JOIN biz_customer c ON o.customer_id = c.id
+        LEFT JOIN biz_warehouse w ON o.warehouse_id = w.id
+        LEFT JOIN sys_user u1 ON o.salesman_id = u1.id
+        LEFT JOIN sys_user u2 ON o.approver_id = u2.id
+        LEFT JOIN sys_dept d ON o.dept_id = d.id
+        WHERE o.id = #{id} AND o.deleted = 0
+    </select>
+    
+    <select id="sumAmountByDateRange" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(total_amount), 0)
+        FROM biz_sale_order
+        WHERE deleted = 0 AND status >= 1
+        AND create_time >= #{startTime} AND create_time &lt; #{endTime}
+    </select>
+    
+    <select id="sumPendingReceive" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(total_amount - received_amount), 0)
+        FROM biz_sale_order
+        WHERE deleted = 0 AND status IN (1, 2)
+    </select>
+</mapper>

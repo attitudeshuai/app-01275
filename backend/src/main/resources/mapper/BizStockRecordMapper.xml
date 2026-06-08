@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wms.mapper.BizStockRecordMapper">
+    
+    <select id="selectRecordPage" resultType="com.wms.entity.BizStockRecord">
+        SELECT r.*, g.goods_name, w.warehouse_name, u.real_name as operator_name
+        FROM biz_stock_record r
+        INNER JOIN biz_goods g ON r.goods_id = g.id
+        INNER JOIN biz_warehouse w ON r.warehouse_id = w.id
+        LEFT JOIN sys_user u ON r.operator_id = u.id
+        WHERE 1=1
+        <if test="goodsId != null">
+            AND r.goods_id = #{goodsId}
+        </if>
+        <if test="warehouseId != null">
+            AND r.warehouse_id = #{warehouseId}
+        </if>
+        <if test="recordType != null and recordType != ''">
+            AND r.record_type = #{recordType}
+        </if>
+        ORDER BY r.create_time DESC
+    </select>
+</mapper>

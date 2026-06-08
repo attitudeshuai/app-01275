@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wms.mapper.BizStockMapper">
+    
+    <select id="selectStockPage" resultType="com.wms.entity.BizStock">
+        SELECT s.*, g.goods_code, g.goods_name, g.safety_stock, g.max_stock, w.warehouse_name
+        FROM biz_stock s
+        INNER JOIN biz_goods g ON s.goods_id = g.id
+        INNER JOIN biz_warehouse w ON s.warehouse_id = w.id
+        WHERE g.deleted = 0 AND w.deleted = 0
+        <if test="goodsName != null and goodsName != ''">
+            AND g.goods_name LIKE CONCAT('%', #{goodsName}, '%')
+        </if>
+        <if test="warehouseId != null">
+            AND s.warehouse_id = #{warehouseId}
+        </if>
+        ORDER BY s.update_time DESC
+    </select>
+    
+    <select id="selectWarningList" resultType="com.wms.entity.BizStock">
+        SELECT s.*, g.goods_code, g.goods_name, g.safety_stock, g.max_stock, w.warehouse_name
+        FROM biz_stock s
+        INNER JOIN biz_goods g ON s.goods_id = g.id
+        INNER JOIN biz_warehouse w ON s.warehouse_id = w.id
+        WHERE g.deleted = 0 AND w.deleted = 0
+          AND s.quantity &lt; g.safety_stock
+        ORDER BY s.update_time DESC
+    </select>
+    
+    <select id="selectWarningPage" resultType="com.wms.entity.BizStock">
+        SELECT s.*, g.goods_code, g.goods_name, g.safety_stock, g.max_stock, w.warehouse_name
+        FROM biz_stock s
+        INNER JOIN biz_goods g ON s.goods_id = g.id
+        INNER JOIN biz_warehouse w ON s.warehouse_id = w.id
+        WHERE g.deleted = 0 AND w.deleted = 0
+          AND s.quantity &lt; g.safety_stock
+        ORDER BY s.update_time DESC
+    </select>
+    
+    <select id="selectOverflowList" resultType="com.wms.entity.BizStock">
+        SELECT s.*, g.goods_code, g.goods_name, g.safety_stock, g.max_stock, w.warehouse_name
+        FROM biz_stock s
+        INNER JOIN biz_goods g ON s.goods_id = g.id
+        INNER JOIN biz_warehouse w ON s.warehouse_id = w.id
+        WHERE g.deleted = 0 AND w.deleted = 0
+          AND g.max_stock > 0 AND s.quantity > g.max_stock
+        ORDER BY s.update_time DESC
+    </select>
+    
+    <select id="selectOverflowPage" resultType="com.wms.entity.BizStock">
+        SELECT s.*, g.goods_code, g.goods_name, g.safety_stock, g.max_stock, w.warehouse_name
+        FROM biz_stock s
+        INNER JOIN biz_goods g ON s.goods_id = g.id
+        INNER JOIN biz_warehouse w ON s.warehouse_id = w.id
+        WHERE g.deleted = 0 AND w.deleted = 0
+          AND g.max_stock > 0 AND s.quantity > g.max_stock
+        ORDER BY s.update_time DESC
+    </select>
+    
+    <select id="selectAllWithGoods" resultType="com.wms.entity.BizStock">
+        SELECT s.*, g.goods_code, g.goods_name, g.safety_stock, g.max_stock, w.warehouse_name
+        FROM biz_stock s
+        INNER JOIN biz_goods g ON s.goods_id = g.id
+        INNER JOIN biz_warehouse w ON s.warehouse_id = w.id
+        WHERE g.deleted = 0 AND w.deleted = 0
+        ORDER BY s.update_time DESC
+    </select>
+    
+    <select id="selectByGoodsAndWarehouse" resultType="com.wms.entity.BizStock">
+        SELECT * FROM biz_stock WHERE goods_id = #{goodsId} AND warehouse_id = #{warehouseId}
+    </select>
+    
+    <select id="selectStockWithGoods" resultType="com.wms.entity.BizStock">
+        SELECT s.*, g.goods_code, g.goods_name, g.safety_stock, g.max_stock
+        FROM biz_stock s
+        INNER JOIN biz_goods g ON s.goods_id = g.id
+        WHERE s.goods_id = #{goodsId} AND g.deleted = 0
+        LIMIT 1
+    </select>
+    
+    <!-- 原子增加库存（入库操作） -->
+    <update id="atomicIncreaseStock">
+        UPDATE biz_stock 
+        SET quantity = quantity + #{quantity}, update_time = NOW()
+        WHERE goods_id = #{goodsId} AND warehouse_id = #{warehouseId}
+    </update>
+    
+    <!-- 原子减少库存（出库操作，带库存充足校验，防止超卖） -->
+    <update id="atomicDecreaseStock">
+        UPDATE biz_stock 
+        SET quantity = quantity - #{quantity}, update_time = NOW()
+        WHERE goods_id = #{goodsId} AND warehouse_id = #{warehouseId} AND quantity >= #{quantity}
+    </update>
+</mapper>

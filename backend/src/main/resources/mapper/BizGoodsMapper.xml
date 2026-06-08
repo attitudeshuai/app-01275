@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wms.mapper.BizGoodsMapper">
+    
+    <select id="selectGoodsPage" resultType="com.wms.entity.BizGoods">
+        SELECT g.*, c.category_name,
+               (SELECT COALESCE(SUM(s.quantity), 0) FROM biz_stock s WHERE s.goods_id = g.id) as total_stock
+        FROM biz_goods g
+        LEFT JOIN biz_category c ON g.category_id = c.id
+        WHERE g.deleted = 0
+        <if test="goodsCode != null and goodsCode != ''">
+            AND g.goods_code LIKE CONCAT('%', #{goodsCode}, '%')
+        </if>
+        <if test="goodsName != null and goodsName != ''">
+            AND g.goods_name LIKE CONCAT('%', #{goodsName}, '%')
+        </if>
+        <if test="categoryId != null">
+            AND g.category_id = #{categoryId}
+        </if>
+        ORDER BY g.create_time DESC
+    </select>
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wms.mapper.BizPurchaseOrderMapper">
+    
+    <select id="selectOrderPage" resultType="com.wms.entity.BizPurchaseOrder">
+        SELECT o.*, s.supplier_name, w.warehouse_name,
+               u1.real_name as applicant_name, u2.real_name as approver_name,
+               d.dept_name
+        FROM biz_purchase_order o
+        LEFT JOIN biz_supplier s ON o.supplier_id = s.id
+        LEFT JOIN biz_warehouse w ON o.warehouse_id = w.id
+        LEFT JOIN sys_user u1 ON o.applicant_id = u1.id
+        LEFT JOIN sys_user u2 ON o.approver_id = u2.id
+        LEFT JOIN sys_dept d ON o.dept_id = d.id
+        WHERE o.deleted = 0
+        <if test="orderNo != null and orderNo != ''">
+            AND o.order_no LIKE CONCAT('%', #{orderNo}, '%')
+        </if>
+        <if test="supplierId != null">
+            AND o.supplier_id = #{supplierId}
+        </if>
+        <if test="status != null">
+            AND o.status = #{status}
+        </if>
+        <if test="deptId != null">
+            AND o.dept_id = #{deptId}
+        </if>
+        ORDER BY o.apply_time DESC
+    </select>
+    
+    <select id="selectOrderById" resultType="com.wms.entity.BizPurchaseOrder">
+        SELECT o.*, s.supplier_name, w.warehouse_name,
+               u1.real_name as applicant_name, u2.real_name as approver_name,
+               d.dept_name
+        FROM biz_purchase_order o
+        LEFT JOIN biz_supplier s ON o.supplier_id = s.id
+        LEFT JOIN biz_warehouse w ON o.warehouse_id = w.id
+        LEFT JOIN sys_user u1 ON o.applicant_id = u1.id
+        LEFT JOIN sys_user u2 ON o.approver_id = u2.id
+        LEFT JOIN sys_dept d ON o.dept_id = d.id
+        WHERE o.id = #{id} AND o.deleted = 0
+    </select>
+    
+    <select id="sumAmountByDateRange" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(total_amount), 0)
+        FROM biz_purchase_order
+        WHERE deleted = 0 AND status >= 1
+        AND apply_time >= #{startTime} AND apply_time &lt; #{endTime}
+    </select>
+    
+    <select id="countByStatus" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM biz_purchase_order
+        WHERE deleted = 0 AND status = #{status}
+    </select>
+    
+    <select id="countByDateRange" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM biz_purchase_order
+        WHERE deleted = 0 AND status >= 1
+        AND apply_time >= #{startTime} AND apply_time &lt; #{endTime}
+    </select>
+</mapper>

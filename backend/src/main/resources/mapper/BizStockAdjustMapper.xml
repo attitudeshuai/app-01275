@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wms.mapper.BizStockAdjustMapper">
+    
+    <select id="selectAdjustPage" resultType="com.wms.entity.BizStockAdjust">
+        SELECT a.*, g.goods_name, w.warehouse_name, u.real_name as operator_name
+        FROM biz_stock_adjust a
+        INNER JOIN biz_goods g ON a.goods_id = g.id
+        INNER JOIN biz_warehouse w ON a.warehouse_id = w.id
+        LEFT JOIN sys_user u ON a.operator_id = u.id
+        WHERE 1=1
+        <if test="adjustType != null and adjustType != ''">
+            AND a.adjust_type = #{adjustType}
+        </if>
+        <if test="warehouseId != null">
+            AND a.warehouse_id = #{warehouseId}
+        </if>
+        ORDER BY a.create_time DESC
+    </select>
+</mapper>

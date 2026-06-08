@@ -1,0 +1,15 @@
+import request from './request'
+
+export const getSalePage = (params) => request.get('/biz/sale/page', { params })
+export const getSaleList = (params) => request.get('/biz/sale/page', { params })
+export const getSale = (id) => request.get(`/biz/sale/${id}`)
+export const getSaleDetail = (id) => request.get(`/biz/sale/${id}`)
+export const saveSale = (data) => request.post('/biz/sale', data)
+export const quoteSale = (data) => request.post('/biz/sale/quote', data)
+export const confirmQuote = (id) => request.put(`/biz/sale/confirm/${id}`)
+export const updateSale = (data) => request.put('/biz/sale', data)
+export const deleteSale = (id) => request.delete(`/biz/sale/${id}`)
+export const approveSale = (id, approved, remark) => request.put('/biz/sale/approve', { id, approved, remark })
+export const shipSale = (id, warehouseId) => request.put('/biz/sale/ship', { id, warehouseId })
+export const receiveSale = (id, amount, paymentMethod, remark) => request.put('/biz/sale/receive', { id, amount, paymentMethod, remark })
+export const getPaymentRecords = (orderId) => request.get(`/biz/sale/payment/${orderId}`)

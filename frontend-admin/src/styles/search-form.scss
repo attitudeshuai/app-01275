@@ -1,0 +1,226 @@
+// 统一搜索表单样式
+.search-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.search-form {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+
+  .search-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    label {
+      font-size: 14px;
+      color: #666;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    :deep(.ant-input),
+    :deep(.ant-picker) {
+      border-radius: 6px !important;
+      height: 32px !important;
+      width: 180px !important;
+    }
+    
+    :deep(.ant-select-selector) {
+      border-radius: 6px !important;
+      height: 32px !important;
+    }
+
+    :deep(.ant-input-affix-wrapper) {
+      border-radius: 6px;
+      padding: 0 11px;
+      height: 32px !important;
+      width: 180px !important;
+      
+      .ant-input {
+        width: 100% !important;
+        height: auto !important;
+      }
+    }
+
+    :deep(.ant-select) {
+      width: 180px !important;
+      height: 32px;
+    }
+    
+    :deep(.ant-select-selection-item),
+    :deep(.ant-select-selection-placeholder) {
+      line-height: 30px !important;
+    }
+  }
+
+  .search-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+
+    .ant-btn {
+      border-radius: 6px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      &.ant-btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: #fff !important;
+        
+        .anticon {
+          color: #fff !important;
+        }
+      }
+    }
+  }
+}
+
+// 表格卡片样式
+.table-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  .table-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+
+    .anticon {
+      color: #667eea;
+    }
+
+    .ant-tag {
+      margin-left: 4px;
+      border-radius: 10px;
+      font-size: 12px;
+    }
+  }
+
+  .ant-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    height: 36px;
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+  }
+}
+
+// 页面容器
+.page-container {
+  padding: 24px;
+  background: #f5f7fa;
+  min-height: calc(100vh - 64px);
+}
+
+// 表格样式优化
+:deep(.ant-table) {
+  .ant-table-thead > tr > th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #475569;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .ant-table-tbody > tr > td {
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .ant-table-tbody > tr:hover > td {
+    background: #f8fafc;
+  }
+}
+
+
+// 弹窗表单样式优化
+:deep(.ant-modal) {
+  .ant-modal-body {
+    padding: 12px 24px;
+  }
+  
+  .ant-form {
+    .ant-form-item {
+      margin-bottom: 20px;
+      
+      .ant-form-item-label > label {
+        color: #374151;
+        font-weight: 500;
+      }
+      
+      .ant-input,
+      .ant-input-number,
+      .ant-select-selector,
+      .ant-picker,
+      .ant-input-affix-wrapper {
+        border-radius: 6px;
+      }
+      
+      .ant-input-number {
+        width: 100%;
+      }
+    }
+    
+    .ant-form-item:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  .ant-modal-footer {
+    border-top: 1px solid #f0f0f0;
+    padding: 12px 24px;
+    
+    .ant-btn {
+      border-radius: 6px;
+      height: 36px;
+      padding: 0 20px;
+      
+      &.ant-btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: #fff !important;
+        
+        span {
+          color: #fff !important;
+        }
+        
+        .anticon {
+          color: #fff !important;
+        }
+      }
+    }
+  }
+}
+
+// 全局主按钮样式 - 确保文字可见
+.ant-btn-primary {
+  color: #fff !important;
+  
+  span {
+    color: #fff !important;
+  }
+  
+  .anticon {
+    color: #fff !important;
+  }
+}

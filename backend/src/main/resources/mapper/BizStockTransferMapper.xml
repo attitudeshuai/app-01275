@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wms.mapper.BizStockTransferMapper">
+    
+    <select id="selectTransferPage" resultType="com.wms.entity.BizStockTransfer">
+        SELECT t.*, g.goods_name, w1.warehouse_name as from_warehouse_name, 
+               w2.warehouse_name as to_warehouse_name, u.real_name as operator_name
+        FROM biz_stock_transfer t
+        INNER JOIN biz_goods g ON t.goods_id = g.id
+        INNER JOIN biz_warehouse w1 ON t.from_warehouse_id = w1.id
+        INNER JOIN biz_warehouse w2 ON t.to_warehouse_id = w2.id
+        LEFT JOIN sys_user u ON t.operator_id = u.id
+        WHERE 1=1
+        <if test="goodsId != null">
+            AND t.goods_id = #{goodsId}
+        </if>
+        ORDER BY t.create_time DESC
+    </select>
+</mapper>

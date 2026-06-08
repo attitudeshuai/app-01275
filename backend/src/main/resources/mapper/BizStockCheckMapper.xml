@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wms.mapper.BizStockCheckMapper">
+    
+    <select id="selectCheckPage" resultType="com.wms.entity.BizStockCheck">
+        SELECT c.*, w.warehouse_name, u.real_name as operator_name
+        FROM biz_stock_check c
+        INNER JOIN biz_warehouse w ON c.warehouse_id = w.id
+        LEFT JOIN sys_user u ON c.operator_id = u.id
+        WHERE 1=1
+        <if test="checkNo != null and checkNo != ''">
+            AND c.check_no LIKE CONCAT('%', #{checkNo}, '%')
+        </if>
+        <if test="warehouseId != null">
+            AND c.warehouse_id = #{warehouseId}
+        </if>
+        <if test="status != null">
+            AND c.status = #{status}
+        </if>
+        ORDER BY c.create_time DESC
+    </select>
+    
+    <select id="selectCheckById" resultType="com.wms.entity.BizStockCheck">
+        SELECT c.*, w.warehouse_name, u.real_name as operator_name
+        FROM biz_stock_check c
+        INNER JOIN biz_warehouse w ON c.warehouse_id = w.id
+        LEFT JOIN sys_user u ON c.operator_id = u.id
+        WHERE c.id = #{id}
+    </select>
+</mapper>

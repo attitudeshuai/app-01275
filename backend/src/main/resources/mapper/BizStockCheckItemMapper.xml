@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wms.mapper.BizStockCheckItemMapper">
+    
+    <select id="selectByCheckId" resultType="com.wms.entity.BizStockCheckItem">
+        SELECT i.*, g.goods_code, g.goods_name
+        FROM biz_stock_check_item i
+        INNER JOIN biz_goods g ON i.goods_id = g.id
+        WHERE i.check_id = #{checkId}
+    </select>
+</mapper>
