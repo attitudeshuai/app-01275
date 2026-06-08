@@ -196,4 +196,144 @@ class PurchaseServiceTest {
 
         assertThrows(BusinessException.class, () -> purchaseService.delete(1L));
     }
+
+    @Test
+    void approve_WithRejectedStatus_ShouldThrowException() {
+        BizPurchaseOrder order = new BizPurchaseOrder();
+        order.setId(1L);
+        order.setStatus(2);
+
+        when(orderMapper.selectById(1L)).thenReturn(order);
+
+        assertThrows(BusinessException.class, () -> purchaseService.approve(1L, true, "同意"));
+    }
+
+    @Test
+    void approve_WithInboundStatus_ShouldThrowException() {
+        BizPurchaseOrder order = new BizPurchaseOrder();
+        order.setId(1L);
+        order.setStatus(3);
+
+        when(orderMapper.selectById(1L)).thenReturn(order);
+
+        assertThrows(BusinessException.class, () -> purchaseService.approve(1L, true, "同意"));
+    }
+
+    @Test
+    void approve_Rejected_ShouldSetStatusTo2() {
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            mockedUserContext.when(UserContext::getUserId).thenReturn(1L);
+
+            BizPurchaseOrder order = new BizPurchaseOrder();
+            order.setId(1L);
+            order.setStatus(0);
+
+            when(orderMapper.selectById(1L)).thenReturn(order);
+            when(orderMapper.updateById(any(BizPurchaseOrder.class))).thenReturn(1);
+
+            purchaseService.approve(1L, false, "价格过高");
+
+            verify(orderMapper).updateById(argThat(o -> 
+                ((BizPurchaseOrder)o).getStatus() == 2 && 
+                "价格过高".equals(((BizPurchaseOrder)o).getApproveRemark())
+            ));
+        }
+    }
+
+    @Test
+    void inbound_WithRejectedStatus_ShouldThrowException() {
+        BizPurchaseOrder order = new BizPurchaseOrder();
+        order.setId(1L);
+        order.setStatus(2);
+
+        when(orderMapper.selectById(1L)).thenReturn(order);
+
+        assertThrows(BusinessException.class, () -> purchaseService.inbound(1L));
+    }
+
+    @Test
+    void inbound_WithAlreadyInbound_ShouldThrowException() {
+        BizPurchaseOrder order = new BizPurchaseOrder();
+        order.setId(1L);
+        order.setStatus(3);
+        order.setWarehouseId(1L);
+
+        when(orderMapper.selectById(1L)).thenReturn(order);
+
+        assertThrows(BusinessException.class, () -> purchaseService.inbound(1L));
+    }
+
+    @Test
+    void update_WithPendingOrder_ShouldUpdate() {
+        com.wms.dto.PurchaseOrderDTO dto = new com.wms.dto.PurchaseOrderDTO();
+        dto.setId(1L);
+        dto.setSupplierId(2L);
+        dto.setWarehouseId(2L);
+        dto.setRemark("更新备注");
+
+        com.wms.dto.PurchaseOrderDTO.PurchaseItemDTO item = new com.wms.dto.PurchaseOrderDTO.PurchaseItemDTO();
+        item.setGoodsId(1L);
+        item.setQuantity(20);
+        item.setPrice(new BigDecimal("150"));
+        dto.setItems(Arrays.asList(item));
+
+        BizPurchaseOrder existing = new BizPurchaseOrder();
+        existing.setId(1L);
+        existing.setStatus(0);
+
+        when(orderMapper.selectById(1L)).thenReturn(existing);
+        when(itemMapper.delete(any())).thenReturn(1);
+        when(itemMapper.insert(any(BizPurchaseItem.class))).thenReturn(1);
+        when(orderMapper.updateById(any(BizPurchaseOrder.class))).thenReturn(1);
+
+        assertDoesNotThrow(() -> purchaseService.update(dto));
+        verify(orderMapper).updateById(argThat(o -> 
+            ((BizPurchaseOrder)o).getSupplierId() == 2L &&
+            ((BizPurchaseOrder)o).getTotalAmount().compareTo(new BigDecimal("3000")) == 0
+        ));
+    }
+
+    @Test
+    void update_WithApprovedOrder_ShouldThrowException() {
+        com.wms.dto.PurchaseOrderDTO dto = new com.wms.dto.PurchaseOrderDTO();
+        dto.setId(1L);
+
+        BizPurchaseOrder existing = new BizPurchaseOrder();
+        existing.setId(1L);
+        existing.setStatus(1);
+
+        when(orderMapper.selectById(1L)).thenReturn(existing);
+
+        assertThrows(BusinessException.class, () -> purchaseService.update(dto));
+    }
+
+    @Test
+    void update_WithNullId_ShouldThrowException() {
+        com.wms.dto.PurchaseOrderDTO dto = new com.wms.dto.PurchaseOrderDTO();
+        dto.setId(null);
+
+        assertThrows(BusinessException.class, () -> purchaseService.update(dto));
+    }
+
+    @Test
+    void delete_WithRejectedOrder_ShouldThrowException() {
+        BizPurchaseOrder order = new BizPurchaseOrder();
+        order.setId(1L);
+        order.setStatus(2);
+
+        when(orderMapper.selectById(1L)).thenReturn(order);
+
+        assertThrows(BusinessException.class, () -> purchaseService.delete(1L));
+    }
+
+    @Test
+    void delete_WithInboundOrder_ShouldThrowException() {
+        BizPurchaseOrder order = new BizPurchaseOrder();
+        order.setId(1L);
+        order.setStatus(3);
+
+        when(orderMapper.selectById(1L)).thenReturn(order);
+
+        assertThrows(BusinessException.class, () -> purchaseService.delete(1L));
+    }
 }

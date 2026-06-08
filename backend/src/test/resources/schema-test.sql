@@ -247,7 +247,8 @@ CREATE TABLE biz_sale_item (
   goods_id bigint NOT NULL,
   quantity int NOT NULL,
   price decimal(12,2) NOT NULL,
-  amount decimal(12,2) NOT NULL
+  amount decimal(12,2) NOT NULL,
+  cost_price decimal(12,2) DEFAULT 0
 );
 
 -- 库存记录表
